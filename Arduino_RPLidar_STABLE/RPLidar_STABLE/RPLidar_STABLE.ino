@@ -9,7 +9,7 @@
 #define RPLIDAR_MIN_DISTANCE 6500
 
 //-----------------------------SD I/O CONSTANT DEFINES
-#define LOG_INTERVAL  1000 // mills between entries (reduce to take more/faster data)
+#define LOG_INTERVAL  1 // mills between entries (reduce to take more/faster data)
 // how many milliseconds before writing the logged data permanently to disk
 // set it to the LOG_INTERVAL to write each time (safest)
 // set it to 10*LOG_INTERVAL to write all data every 10 datareads, you could lose up to 
@@ -42,11 +42,11 @@ File datafile;
 
 //DATA FILES VARIABLES (file names have to be 8.3 format)
 int file_counter = 0;
-char* data_file_names[] = {"1M1MPHT1.CSV", "1M1MPHT2.CSV", "1M1MPHT3.CSV","1M1MPHT4.CSV", "1M3MPHT5.CSV",
-                          "1M2MPHT1.CSV", "1M2MPHT2.CSV", "1M2MPHT3.CSV","1M2MPHT4.CSV", "1M2MPHT5.CSV",
-                          "1M3MPHT1.CSV", "1M3MPHT2.CSV", "1M3MPHT3.CSV","1M3MPHT4.CSV", "1M3MPHT5.CSV",
+char* data_file_names[] = {"1M3MPHT1.CSV", "1M3MPHT2.CSV", "1M3MPHT3.CSV","1M3MPHT4.CSV", "1M3MPHT5.CSV",
                           "1M4MPHT1.CSV", "1M4MPHT2.CSV", "1M4MPHT3.CSV","1M4MPHT4.CSV", "1M4MPHT5.CSV",
-                          "1M5MPHT1.CSV", "1M5MPHT2.CSV", "1M5MPHT3.CSV","1M5MPHT4.CSV", "1M5MPHT5.CSV"};                        
+                          "1M5MPHT1.CSV", "1M5MPHT2.CSV", "1M5MPHT3.CSV","1M5MPHT4.CSV", "1M5MPHT5.CSV",
+                          "1M6MPHT1.CSV", "1M6MPHT2.CSV", "1M6MPHT3.CSV","1M6MPHT4.CSV", "1M6MPHT5.CSV"};
+
 long int trial_time_intervals[] = {26843, 13421, 8947, 6710, 5368}; //time (ms) it takes to complete 12m in 1-5 mph
 
 //TIMING VARIABLES
@@ -74,7 +74,7 @@ bool initFile(){
   Serial.print("Init File: ");
   Serial.print(data_file_names[file_counter]);
   Serial.println();
-  
+  SD.remove(data_file_names[file_counter]);
   datafile = SD.open(data_file_names[file_counter], FILE_WRITE);
   
   if(datafile){
@@ -163,7 +163,6 @@ void loop() {
   }
   else{
     //wait for button to be pressed
-    
     if(digitalRead(BUTTON_PRESS_PREV) == 0 && file_counter > 0){
 
       file_counter --;
@@ -171,7 +170,7 @@ void loop() {
       Serial.print(file_counter);
       Serial.println();
       setColor(255,0,0); //red if prev
-      delay(2000);
+      delay(1500);
       setColor(0,0,0);
     }
     if(digitalRead(BUTTON_PRESS_NEXT) == 0){
@@ -180,8 +179,8 @@ void loop() {
       Serial.print("NEXT: FileCounter: ");
       Serial.print(file_counter);
       Serial.println();
-      setColor(0,255,0); //green if next
-      delay(2000);
+      setColor(255,0,255); //purple if next
+      delay(1500);
       setColor(0,0,0);
     }
     if(digitalRead(BUTTON_PRESS_RUN) == 0){
@@ -199,16 +198,41 @@ void loop() {
       }
 
       setColor(255,0,0);//ready
-      delay(1000);
+      delay(2000);
       setColor(0,0,255);//set
       analogWrite(RPLIDAR_MOTOR, 255);
-      delay(2000);
-      setColor(255,255,0);//go
-      delay(1000);
+      for(int i = 0; i < 5; i++){
+        delay(400);
+        setColor(0,0,0);
+        delay(100);
+        setColor(0,0,255);
+      }
+      delay(2500);
+      setColor(0,255,0);//go
      
       Serial.println("***SCAN STARTED***");
       last_timestamp = millis();
-      
     }
   } 
 }
+/*
+char* data_file_names_2M[] = {"2M2MPHT1.CSV", "2M2MPHT2.CSV", "2M2MPHT3.CSV","2M2MPHT4.CSV", "2M2MPHT5.CSV",
+                              "2M3MPHT1.CSV", "2M3MPHT2.CSV", "2M3MPHT3.CSV","2M3MPHT4.CSV", "2M3MPHT5.CSV",
+                              "2M4MPHT1.CSV", "2M4MPHT2.CSV", "2M4MPHT3.CSV","2M4MPHT4.CSV", "2M4MPHT5.CSV",
+                              "2M5MPHT1.CSV", "2M5MPHT2.CSV", "2M5MPHT3.CSV","2M5MPHT4.CSV", "2M5MPHT5.CSV"};          
+
+char* data_file_names_3M[] = {"3M2MPHT1.CSV", "3M2MPHT2.CSV", "3M2MPHT3.CSV","3M2MPHT4.CSV", "3M2MPHT5.CSV",
+                              "3M3MPHT1.CSV", "3M3MPHT2.CSV", "3M3MPHT3.CSV","3M3MPHT4.CSV", "3M3MPHT5.CSV",
+                              "3M4MPHT1.CSV", "3M4MPHT2.CSV", "3M4MPHT3.CSV","3M4MPHT4.CSV", "3M4MPHT5.CSV",
+                              "3M5MPHT1.CSV", "3M5MPHT2.CSV", "3M5MPHT3.CSV","3M5MPHT4.CSV", "3M5MPHT5.CSV"};          
+
+char* data_file_names_4M[] = {"4M2MPHT1.CSV", "4M2MPHT2.CSV", "4M2MPHT3.CSV","4M2MPHT4.CSV", "4M2MPHT5.CSV",
+                              "4M3MPHT1.CSV", "4M3MPHT2.CSV", "4M3MPHT3.CSV","4M3MPHT4.CSV", "4M3MPHT5.CSV",
+                              "4M4MPHT1.CSV", "4M4MPHT2.CSV", "4M4MPHT3.CSV","4M4MPHT4.CSV", "4M4MPHT5.CSV",
+                              "4M5MPHT1.CSV", "4M5MPHT2.CSV", "4M5MPHT3.CSV","4M5MPHT4.CSV", "4M5MPHT5.CSV"};          
+
+char* data_file_names_5M[] = {"5M2MPHT1.CSV", "5M2MPHT2.CSV", "5M2MPHT3.CSV","5M2MPHT4.CSV", "5M2MPHT5.CSV",
+                              "5M3MPHT1.CSV", "5M3MPHT2.CSV", "5M3MPHT3.CSV","5M3MPHT4.CSV", "5M3MPHT5.CSV",
+                              "5M4MPHT1.CSV", "5M4MPHT2.CSV", "5M4MPHT3.CSV","5M4MPHT4.CSV", "5M4MPHT5.CSV",
+                              "5M5MPHT1.CSV", "5M5MPHT2.CSV", "5M5MPHT3.CSV","5M5MPHT4.CSV", "5M5MPHT5.CSV"};          
+*/

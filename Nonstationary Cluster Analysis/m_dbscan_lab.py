@@ -21,7 +21,7 @@ DATA = DataManager(DATA_LIST_FILE_NAME[LIST_FILE_ID])
 
 #The DBSCAN class holds the DBSCAN algorithm
 dbscan_obj = DBSCAN(t_eps = 100)
-dbscan_obj.normalize = True #normalizes flash clusters into its actual position
+dbscan_obj.normalize = False #normalizes flash clusters into its actual position
 
 #choose between initializing the DataManager with a single and series of files
 if MULTIPLE_FILES:

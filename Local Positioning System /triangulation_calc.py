@@ -28,7 +28,7 @@ class Beacon:
 
 class Bender:
     def __init__(self):
-        self.pos = [137,150]
+        self.pos = [199,190]
 
     def intersectOfLines(self, line1, line2):
         a1 = line1[0]

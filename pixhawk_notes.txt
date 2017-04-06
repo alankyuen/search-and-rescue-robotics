@@ -1,0 +1,10 @@
+DroneKit/Pixhawk Notes	
+
+Position Control
+	-Controlling the vehicle by explicitly setting the target position is useful when the final position is known/fixed.
+	-The recommended method for position control is Vehicle.simple_goto() (takes a LocationGlobal or LocationGlobalRelative)
+		-http://python.dronekit.io/guide/copter/guided_mode.html#guided-mode-copter-position-control
+
+Velocity control
+	-Controlling vehicle movement using velocity is much smoother than using position when there are likely to be many updates (for example when tracking moving objects).
+	-The function send_ned_velocity() below generates a SET_POSITION_TARGET_LOCAL_NED MAVLink message which is used to directly specify the speed components of the vehicle in the MAV_FRAME_LOCAL_NED frame (relative to home location). The message is re-sent every second for the specified duration.
