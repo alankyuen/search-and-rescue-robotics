@@ -1,0 +1,36 @@
+env:
+  global:
+    - SITL_SPEEDUP=10
+    - SITL_RATE=200
+
+python:
+  - "2.7"
+  - "3.5"
+
+install:
+  - 'pip install -r requirements.txt'
+
+script:
+  - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.unit'
+  - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.sitl'
+
+git:
+  depth: 10
+
+language: python
+
+notifications:
+  email: false
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/f3f81b74f930dac9583a
+    on_success: change
+    on_failure: always
+    on_start: never
+
+matrix:
+  fast_finish: true
+
+branches:
+  only:
+    - master

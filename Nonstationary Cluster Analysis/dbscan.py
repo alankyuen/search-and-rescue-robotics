@@ -1,5 +1,6 @@
-import sys, math, random, constants, copy
+import sys, math, random, constants, copy, csv
 from constants import*
+
 
 ############################################################################
 #                                DBSCAN                                    #
@@ -17,7 +18,7 @@ class DataManager:
         self.points = []
         
         #filter low quality points
-        self.MIN_QUALITY = 13
+        self.MIN_QUALITY = 12
 
         #const used in polar-cartesian translations
         self.DEG_TO_PI = math.pi/180.0
@@ -28,7 +29,7 @@ class DataManager:
         del points[:]
 
     #returns points generated from data
-    def getPointsFromFile(self, nextFile = 0, delimiter = " ", single_file = ""):
+    def getPointsFromFile(self, nextFile = 0, delimiter = " ", single_file = "", file_type = ".txt"):
         if single_file != "":
             file_name = single_file
             print("Extracting data from: " + file_name)
@@ -39,23 +40,31 @@ class DataManager:
             file_name = self.data_files[self.data_file_counter]
             print("Extracting data from: " + file_name)
 
+
         del self.points[:]
 
-        with open(file_name) as f:
-            data = f.readlines()
-            
+        if(file_type == ".txt"):
+            with open(file_name) as f:
+                data = f.readlines()
+        else:
+            with open(file_name, 'rb') as csvfile:
+                data = csv.reader(csvfile,delimiter='\n')
+                print(data)
+
         for line in data:
-            words = line.split(delimiter)#words: [ms, mm, deg, quality]
+            words = line.split(delimiter)#words: [ms, mm, deg, quality] #old: [mm,deg,quality]
 
             quality = float(words[3])
+            dist = float(words[1])
+            angle = float(words[2])
             timestamp = float(words[0])
             #if distance is less than half a meter or quality is lower than min, pass
             if quality < self.MIN_QUALITY:
                     continue
 
             #translates polar to cartesian
-            x = float(words[1])*math.cos(float(words[2]) * self.DEG_TO_PI)
-            y = float(words[1])*math.sin(float(words[2]) * self.DEG_TO_PI)
+            x = float(dist)*math.cos(angle * self.DEG_TO_PI)
+            y = float(dist)*math.sin(angle * self.DEG_TO_PI)
             
             #translate 6m from center to corner
             point = [x + (MAP_SIZE_MM[0]/2),y + (MAP_SIZE_MM[0]/2)] 
@@ -135,7 +144,7 @@ class Cluster:
 #Density-based spatial clustering of applications with noise
 class DBSCAN:
     #min points, density epsilon, time epsilon
-    def __init__(self, mpts = 5, d_eps = 150, t_eps = 50):
+    def __init__(self, mpts = 2, d_eps = 150, t_eps = 80):
         self.minPts = mpts
         self.dist_epsilon = d_eps
         self.time_epsilon = t_eps
@@ -180,7 +189,7 @@ class DBSCAN:
                 p.classification = "" #CORE, REACHABLE, NOISE
                 p.cluster = "" #cluster name
 
-        self.minPts = 5
+        self.minPts = 2
         self.dist_epsilon = 150
         self.analyze()
         self.connectClusters()
@@ -201,7 +210,7 @@ class DBSCAN:
         self.minPts = 20
         self.dist_epsilon = 150
         self.analyze(time_dependent = False)
-        self.connectClusters(eps = 50)
+        self.connectClusters(eps = 10)
         self.generateClusterRects()
         print("num clusters - " + str(len(self.clusters)))
         print("D_eps: " + str(self.dist_epsilon) + " T_eps: " + str(self.time_epsilon) + " minPts: " + str(self.minPts))
@@ -325,33 +334,36 @@ class DBSCAN:
     def normalizePoints(self, velocity_time_multipliers):
         if not self.normalize or not velocity_time_multipliers:
             return
-        avg_velocity = sum([v[0] for v in velocity_time_multipliers])/len(velocity_time_multipliers)
+        avg_velocity = [sum([v[0][0] for v in velocity_time_multipliers])/len(velocity_time_multipliers),sum([v[0][1] for v in velocity_time_multipliers])/len(velocity_time_multipliers)]
         #print("average velocity: " + str(avg_velocity))
         
         for pt in self.points:
-            dist_travlled = 0
+            dist_travelled = 0
 
             #if point's timestamp is before record
             if(pt.timestamp < velocity_time_multipliers[0][1]):
-                dist_travlled = velocity_time_multipliers[0][0] * pt.timestamp
+                dist_travelled = [velocity_time_multipliers[0][0][0] * pt.timestamp,velocity_time_multipliers[0][0][1] * pt.timestamp]
             #if point's timestamp is within record
             else:
-                dist_travlled = avg_velocity * velocity_time_multipliers[0][1]
+                dist_travelled = [avg_velocity[0] * velocity_time_multipliers[0][1],avg_velocity[1] * velocity_time_multipliers[0][1]]
                 #where the point lies in the velocity_time_multiplier
                 for i in range(len(velocity_time_multipliers)):
                     if(pt.timestamp >= velocity_time_multipliers[i][1] and pt.timestamp <= velocity_time_multipliers[i][2]):
                         #if point's timestamp ends at this interval, add the remaining distance travelled
-                        dist_travlled += velocity_time_multipliers[i][0] * (pt.timestamp - velocity_time_multipliers[i][1])
+                        dist_travelled[0] += velocity_time_multipliers[i][0][0] * (pt.timestamp - velocity_time_multipliers[i][1])
+                        dist_travelled[1] += velocity_time_multipliers[i][0][1] * (pt.timestamp - velocity_time_multipliers[i][1])
                         break
                     else:
                         #add point's velocity * time between clusters
-                        dist_travlled += velocity_time_multipliers[i][0] * (velocity_time_multipliers[i][2] - velocity_time_multipliers[i][1])
+                        dist_travelled[0] += velocity_time_multipliers[i][0][0] * (velocity_time_multipliers[i][2] - velocity_time_multipliers[i][1])
+                        dist_travelled[1] += velocity_time_multipliers[i][0][1] * (velocity_time_multipliers[i][2] - velocity_time_multipliers[i][1])
                 #if the timestamp extends past the last recorded velocity, add the rest of the time multiplied by last known velocity
                 if(pt.timestamp > velocity_time_multipliers[-1][2]):
-                    dist_travlled += velocity_time_multipliers[-1][0] * (pt.timestamp - velocity_time_multipliers[-1][2])
-
+                    dist_travelled[0] += velocity_time_multipliers[-1][0][0] * (pt.timestamp - velocity_time_multipliers[-1][2])
+                    dist_travelled[1] += velocity_time_multipliers[-1][0][1] * (pt.timestamp - velocity_time_multipliers[-1][2])
             #currently 1 dimensional normalization
-            pt.coord[0] -= dist_travlled
+            pt.coord[0] -= dist_travelled[0]
+            pt.coord[1] -= dist_travelled[1]
         self.normalizeRESET()
 
 #FC Analysis
@@ -428,16 +440,20 @@ class FCAnal:
             #print("POS: " + str(fc_group.centroid) + " avg_time_stamp: " + str(fc_group.avg_time_stamp))
 
     def findFCVelocities(self):
-        if(len(self.FC_groups) == 0):
+        if(len(self.FC_groups) == 0 or len(self.FC_velocities) == 0):
             return
         #only one FCGroup (line) for now
         FCGroup = self.FC_groups[0]
         for i in range(len(FCGroup) - 1):
-            delta_dist = getDistance(FCGroup[i].centroid, FCGroup[i+1].centroid)
+            delta_dist = [abs(FCGroup[i].centroid[0] - FCGroup[i+1].centroid[0]),abs(FCGroup[i].centroid[1] - FCGroup[i+1].centroid[1])]
             delta_time = FCGroup[i+1].avg_time_stamp - FCGroup[i].avg_time_stamp
-            velocity = delta_dist/delta_time #m/s
+            velocity = [delta_dist[0]/delta_time,delta_dist[1]/delta_time] #m/s
             self.FC_velocities.append([velocity,FCGroup[i].avg_time_stamp,FCGroup[i+1].avg_time_stamp])
-        #print(self.FC_velocities)
+        avg = 0
+        for v in self.FC_velocities:
+            avg += math.sqrt(v[0][0]**2 + v[0][1]**2)
+
+        print(avg/len(self.FC_velocities))
         return self.FC_velocities
 
 """

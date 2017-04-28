@@ -1,0 +1,9 @@
+/Users/alanyuen/Desktop/RAG-2017-Info-Processing-master/Nonstationary Cluster Analysis/DataFiles/April5Data/1M2MPHT3.CSV
+/Users/alanyuen/Desktop/RAG-2017-Info-Processing-master/Nonstationary Cluster Analysis/DataFiles/April5Data/1M2MPHT4.CSV
+/Users/alanyuen/Desktop/RAG-2017-Info-Processing-master/Nonstationary Cluster Analysis/DataFiles/April5Data/1M2MPHT5.CSV
+/Users/alanyuen/Desktop/RAG-2017-Info-Processing-master/Nonstationary Cluster Analysis/DataFiles/April5Data/1M3MPHT1.CSV
+/Users/alanyuen/Desktop/RAG-2017-Info-Processing-master/Nonstationary Cluster Analysis/DataFiles/April5Data/1M3MPHT2.CSV
+/Users/alanyuen/Desktop/RAG-2017-Info-Processing-master/Nonstationary Cluster Analysis/DataFiles/April5Data/1M3MPHT3.CSV
+/Users/alanyuen/Desktop/RAG-2017-Info-Processing-master/Nonstationary Cluster Analysis/DataFiles/April5Data/1M3MPHT4.CSV
+/Users/alanyuen/Desktop/RAG-2017-Info-Processing-master/Nonstationary Cluster Analysis/DataFiles/April5Data/1M3MPHT5.CSV
+/Users/alanyuen/Desktop/RAG-2017-Info-Processing-master/Nonstationary Cluster Analysis/DataFiles/April5Data/1M4MPHT1.CSV

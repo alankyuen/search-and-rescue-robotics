@@ -9,10 +9,10 @@ from constants import*
 
 #determines whether the DBSCAN lab opens files written in DATA_LIST_FILE_NAME or whether to pick individual data files
 MULTIPLE_FILES = True
-DATA_LIST_FILE_NAME = ["DataFiles/List_Of_Files.txt"]
-LIST_FILE_ID = 0
-DATA_TEXT_FILE_NAME = ["DataFiles/new_data/Control/Radius/CONTROLR_5B_3M_6S_QT_10_t1.txt", "DataFiles/test3.txt"]
-TEXT_FILE_ID = 0
+DATA_LIST_FILE_NAME = ["a5data_files.txt","DataFiles/List_Of_Files.txt", "DataFiles/OldDataFiles.txt"]
+LIST_FILE_ID = 1
+DATA_TEXT_FILE_NAME = ["DataFiles/new_data/Control/Radius/CONTROLR_5B_3M_6S_QT_10_t1.txt", "DataFiles/test3.txt", "DataFiles/old_data/Control/Radius/CONTROLR_5B_3M_6S_QT_10_t1.txt"]
+TEXT_FILE_ID = 1
 DELIM = ["\t\t", " ", ","] 
 DELIM_ID = 0 #**make sure you match delimiter with what files you're anaylzing
 
@@ -20,8 +20,8 @@ DELIM_ID = 0 #**make sure you match delimiter with what files you're anaylzing
 DATA = DataManager(DATA_LIST_FILE_NAME[LIST_FILE_ID])
 
 #The DBSCAN class holds the DBSCAN algorithm
-dbscan_obj = DBSCAN(t_eps = 100)
-dbscan_obj.normalize = False #normalizes flash clusters into its actual position
+dbscan_obj = DBSCAN(t_eps = 80)
+dbscan_obj.normalize = True #normalizes flash clusters into its actual position
 
 #choose between initializing the DataManager with a single and series of files
 if MULTIPLE_FILES:
@@ -111,7 +111,10 @@ while True:
                     n_c[2] = 255
                 drawPoint([int(pt.coord[0]/MM_PXL[0]),int(pt.coord[1]/MM_PXL[1])], n_c)
         #**********************#
-
+        if pygame.mouse.get_pressed() == (1,0,0):
+            m_pos = pygame.mouse.get_pos()
+            dist = math.sqrt((8000 - (m_pos[0]*20.0))**2 + (8000 - (m_pos[1]*20.0))**2)
+            print(dist)
         keys = pygame.key.get_pressed()
         if keys[K_SPACE]:
             change_val = 5
