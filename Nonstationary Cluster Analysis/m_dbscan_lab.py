@@ -88,13 +88,63 @@ def refreshSurfaces():
         grid_surface.set_colorkey((1,1,1))
         annot_surface.fill((1,1,1))
         annot_surface.set_colorkey((1,1,1))
+def waypointGen():
+    direction = 0 #0-up 1-right 2-down 3-left
+    map_length = 200
+    unit = 12.0
+    range_to_change =  (map_length/unit)-2 #in units
+    range_travelled = 0 #in units
+    waypoints = [[0,0]]
+    directions = ["90"]
+    distance_travelled = 0
+    while(range_to_change > 0):
 
+        for i in range(2):
+            while(range_travelled < range_to_change):
+                if(direction == 0):
+                    #up (+)y
+                    waypoints.append([waypoints[-1][0],waypoints[-1][1]+(2*unit)])
+                    distance_travelled += (2*unit)
+                elif(direction == 1):
+                    #right (+)x
+                    waypoints.append([waypoints[-1][0]+(2*unit),waypoints[-1][1]])
+                elif(direction == 2):
+                    #down (-)y
+                    waypoints.append([waypoints[-1][0],waypoints[-1][1]-(2*unit)])
+                elif(direction == 3):
+                    #left (-)x
+                    waypoints.append([waypoints[-1][0]-(2*unit),waypoints[-1][1]])
+                
+
+                range_travelled += 2
+                """
+                if(direction == 0):
+                    directions.append("90")
+                elif(direction == 1):
+                    directions.append("0")
+                elif(direction == 2):
+                    directions.append("270")
+                elif(direction == 3):
+                    directions.append("180")
+                """
+            direction += 1
+            direction %= 4
+            
+            range_travelled = 0
+            print(waypoints[-1])
+
+        range_to_change -= 2
+    return [waypoints,directions]
+
+
+waypoints = waypointGen()
+print(waypoints)
 ############################################################################
 
 while True:
         refreshSurfaces()
         drawGrid()
-
+        """
         #*** DRAWING CLUSTER RECTS ***#
         for rect in dbscan_obj.cluster_rects:
             drawRect(rect[0], rect[1])
@@ -111,6 +161,10 @@ while True:
                     n_c[2] = 255
                 drawPoint([int(pt.coord[0]/MM_PXL[0]),int(pt.coord[1]/MM_PXL[1])], n_c)
         #**********************#
+        """
+        for i in range(len(waypoints[0])):
+            drawPoint([int(waypoints[0][i][0])*2,int(waypoints[0][i][1])*2], (255,255,255))
+
         if pygame.mouse.get_pressed() == (1,0,0):
             m_pos = pygame.mouse.get_pos()
             dist = math.sqrt((8000 - (m_pos[0]*20.0))**2 + (8000 - (m_pos[1]*20.0))**2)

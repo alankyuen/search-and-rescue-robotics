@@ -2,10 +2,6 @@ import math
 from math import radians, cos, sin, asin, sqrt
 
 def haversine(gps1,gps2):
-    """
-    Calculate the great circle distance between two points 
-    on the earth (specified in decimal degrees)
-    """
     # convert decimal degrees to radians 
     lon1, lat1, lon2, lat2 = map(radians, [gps1[1], gps1[0], gps2[1], gps2[0]])
 
@@ -16,6 +12,7 @@ def haversine(gps1,gps2):
     c = 2 * asin(sqrt(a)) 
     r = 6378137.0 # Radius of earth in kilometers. Use 3956 for miles
     return c * r
+    
 def get_location_metres(original_location, dNorth, dEast):
     earth_radius = 6378137.0 #Radius of "spherical" earth
     #Coordinate offsets in radians
@@ -25,14 +22,28 @@ def get_location_metres(original_location, dNorth, dEast):
     #New position in decimal degrees
     newlat = original_location[0] + (dLat * 180/math.pi)
     newlon = original_location[1] + (dLon * 180/math.pi)
-    return [newlat,newlon];
+    return [newlat,newlon]
+
 def get_bearing(aLocation1, aLocation2):
     off_x = aLocation2[0] - aLocation1[0]
     off_y = aLocation2[1] - aLocation1[1]
     bearing = 90 + math.atan2(-off_y, off_x) * 57.2957795
     if bearing < 0:
         bearing += 360.00
-    return bearing;  
+
+    return bearing
+
+def calcGPS_from_map(origin, field_bearing, map_pos):
+    map_point_bearing = math.atan2(map_pos[1],map_pos[0])*57.2958
+    map_point_dist = math.sqrt(map_pos[0]**2 + map_pos[1]**2) * 0.3048
+
+    print"pt_bearing:{} && pt_dist:{}".format(map_point_bearing,map_point_dist)
+    abs_point_bearing = field_bearing + 270 + map_point_bearing
+
+    dN = math.sin(abs_point_bearing*0.0174533) * map_point_dist
+    dE = math.cos(abs_point_bearing*0.0174533) * map_point_dist
+
+    return get_location_metres(origin,dN,dE)
 
 class point:
     def __init__(self, ts = 0, gps_origin = [], raw_measurement = [], abs_position = []):
@@ -70,7 +81,6 @@ class point:
         print(self.abs_ft)
     def getDistanceFrom(self, neighbor):
         return math.sqrt((self.abs_ft[0] - neighbor.abs_ft[0])**2 + (self.abs_ft[1] - neighbor.abs_ft[1])**2)
-
 class cluster:
     def __init__(self, identity = 0):
         self.ID = identity
@@ -93,19 +103,60 @@ class cluster:
         self.centroid_ft = centroid
 
         return centroid
-
 class field:
    
     def __init__(self):
         self.field_dimensions_ft = [200.0,200.0]
         self.field_dimensions_m = [60.96,60.96]
 
-        self.effective_sensor_range_ft = 12.1391
-        self.effective_sensor_range_m = 3.7
+        self.effective_sensor_range_ft = 12.1391 * 2
+        self.effective_sensor_range_m = 3.7 * 2
 
-        self.grid_dimensions = [self.field_dimensions_ft[0]/self.effective_sensor_range_ft[0],self.field_dimensions_ft[1]/self.effective_sensor_range_ft[1]]
+        self.grid_dimensions = [int(self.field_dimensions_ft[0]/self.effective_sensor_range_ft),int(self.field_dimensions_ft[1]/self.effective_sensor_range_ft)]
         #self.grid_dimensions_m = [self.field_dimensions_m[0]/self.effective_sensor_range_m[0],self.field_dimensions_m[1]/self.effective_sensor_range_m[1]]
         self.cells = [[[None] for c in range(self.grid_dimensions[0])] for r in range(self.grid_dimensions[1])] #[r][c]
+
+        self.field_bearing = 0
+        self.buckets_gps = []
+
+        self.gps_waypoints = []
+        self.ft_waypoints = []
+
+    def waypointGen(origin, field_bearing):
+        S_R = self.effective_sensor_range_ft
+
+        self.gps_waypoints = []
+        self.ft_waypoints = []
+
+        waypoint = [S_R,0]
+        self.ft_waypoints.append(waypoint)
+        self.gps_waypoints.append(calcGPS_from_map(origin,field_bearing,waypoint))
+        #print(waypoint)    
+
+        delta_wp = [0,200-S_R] #(+)
+
+        waypoint = [waypoint[0] + delta_wp[0],waypoint[1] + delta_wp[1]]
+        self.ft_waypoints.append(waypoint)
+        self.gps_waypoints.append(calcGPS_from_map(origin,field_bearing,waypoint))
+        #print(waypoint)
+        negate = 1
+        i = 1
+        while(abs(100-waypoint[0]) > S_R and abs(100-waypoint[1]) > S_R):
+            delta_wp = [negate*(200-(2*i*S_R)),0] #(+)
+            waypoint = [waypoint[0] + delta_wp[0],waypoint[1] + delta_wp[1]]
+            self.ft_waypoints.append(waypoint)
+            self.gps_waypoints.append(calcGPS_from_map(origin,field_bearing,waypoint))
+            #print(waypoint)
+
+            if(abs(100-waypoint[0]) > S_R or abs(100-waypoint[1]) > S_R):
+                delta_wp = [0,negate*((2*i*S_R)-200)] #(+)
+                waypoint = [waypoint[0] + delta_wp[0],waypoint[1] + delta_wp[1]]
+                self.ft_waypoints.append(waypoint)
+                self.gps_waypoints.append(calcGPS_from_map(origin,field_bearing,waypoint))
+                #print(waypoint)
+            negate *= -1
+            i+= 1
+        return self.gps_waypoints
 
     def addPoint(self, pt):
         #pt: .origin, .raw, .abs, .visited, .cluster_name
@@ -270,6 +321,8 @@ class DBSCAN:
             if pt.classification == "NOISE":
                 new_noise.append(pt)
         self.noise = new_noise
+
+"""
 #33.716318, -117.830465 top left corner 33.716278, -117.830047
 #33.716039, -117.830054
 c1 = [33.703317, -117.779587]
@@ -278,5 +331,7 @@ c3 = [33.71648309670308, -117.83143788477567]
 c4_pt = [33.703416, -117.779394]
 
 field_bearing = get_bearing(c1,c2)
-p1 = point(0, [33.704131, -117.779421], [180,20964.8592505,15],[0,0])
-p1.calculateAbsPos(c1, field_bearing, 270)
+p1 = point(0, c1, [35,20964.8592505,15],[0,0])
+p1.calculateAbsPos(c1, field_bearing, 90)
+print(waypointGen(12.5,c1,field_bearing))
+"""
