@@ -14,27 +14,13 @@ from pymavlink import mavutil  # Needed for command message definitions
 import time
 import SARA
 
-def robotIsAtLocation(targetLocation):
-    difference = 0.0001
-    if 	abs(vehicle.location.global_frame.lat - targetLocation.lat) < difference and
-    	abs(vehicle.location.global_frame.lon - targetLocation.lon) < difference:
-        return True
-    else:
-        return False
+rover = SARA.SARA()
+rover.init()
+while(rover.MISSION_ENABLED):
+    rover.run()
+rover.deconstruct()
 
-def getGPS():
-	return [vehicle.location.global_frame.lat,vehicle.location.global_frame.lon]
 
-# connection_string = "/dev/cu.usbserial-FTZ1626T, 921600"
-# connection_string = "/dev/ttyUSB0,921600"
-# connection_string = "tcp:127.0.0.1:5760"
-connection_string = "/dev/serial/by-id/usb-FTDI_C232HD-DDHSP-0_FTZ1626T-if00-port0,921600"
-
-# Connect to the Vehicle.
-#   Set `wait_ready=True` to ensure default attributes are populated before `connect()` returns.
-print
-"\nConnecting to vehicle on: %s" % connection_string
-vehicle = connect(connection_string)
 
 """
 # Get all vehicle attributes (state)
@@ -57,7 +43,7 @@ print " Groundspeed: %s" % vehicle.groundspeed    # settable
 #print " Airspeed: %s" % vehicle.airspeed    # settable
 print " Mode: %s" % vehicle.mode.name    # settable
 print " Armed: %s" % vehicle.armed    # settable
-"""
+
 vehicle.armed = True
 # sleep(1)
 # set home location
@@ -66,7 +52,7 @@ vehicle.home_location = vehicle.location.global_frame
 vehicle.groundspeed = 5
 
 
-"""
+
 while not robotIsAtLocation(park1):
     vehicle.simple_goto(park1, 5)
     time.sleep(0.5)
@@ -87,13 +73,3 @@ while not robotIsAtLocation(park5):
     vehicle.simple_goto(park5, 5)
     time.sleep(0.5)
 """
-vehicle.armed = False
-print
-" Now Vehicle is not armed"
-
-# Close vehicle object before exiting script
-print
-"\nClose vehicle object"
-vehicle.close()
-
-print("Completed")

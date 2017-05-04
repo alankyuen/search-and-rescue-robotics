@@ -1,10 +1,12 @@
-from math import radians, cos, sin, asin, sqrt
+from math import radians, cos, sin, asin, sqrt, pi, atan2
 from dronekit import LocationGlobal
 
 deg_to_rad = 0.0174533
 m_to_ft = 3.28084
 ft_to_m = 0.3048
 
+def printGPS(gps):
+    print"GPS:[{},{}]".format(gps.lat,gps.lon)
 def getDist(pt1,pt2):
 	return sqrt((pt1[1]-pt2[1])**2 + (pt1[0]-pt2[0])**2)
 	
@@ -23,28 +25,28 @@ def get_location_metres(original_location, dNorth, dEast):
     earth_radius = 6378137.0 #Radius of "spherical" earth
     #Coordinate offsets in radians
     dLat = dNorth/earth_radius
-    dLon = dEast/(earth_radius*math.cos(math.pi*original_location[0]/180))
+    dLon = dEast/(earth_radius * cos(pi*original_location.lat/180))
 
     #New position in decimal degrees
-    newlat = original_location.lat + (dLat * 180/math.pi)
-    newlon = original_location.lon + (dLon * 180/math.pi)
-    return LocationGlobal(newlat,newlon)
+    newlat = original_location.lat + (dLat * 180/pi)
+    newlon = original_location.lon + (dLon * 180/pi)
+    return LocationGlobal(newlat,newlon, original_location.alt)
 
 def get_bearing(aLocation1, aLocation2):
     off_x = aLocation2.lat - aLocation1.lat
     off_y = aLocation2.lon - aLocation1.lon
-    bearing = 90 + math.atan2(-off_y, off_x) * 57.2957795
+    bearing = 90 + atan2(-off_y, off_x) * 57.2957795
     if bearing < 0:
         bearing += 360.00
     return bearing
 
 def calcGPS_from_map(origin, field_bearing, map_pos):
-    map_point_bearing = math.atan2(map_pos[1],map_pos[0])*57.2958
-    map_point_dist = math.sqrt(map_pos[0]**2 + map_pos[1]**2) * ft_to_m
+    map_point_bearing = atan2(map_pos[1],map_pos[0])*57.2958
+    map_point_dist = sqrt(map_pos[0]**2 + map_pos[1]**2) * ft_to_m
 
     abs_point_bearing = (field_bearing + 270 + map_point_bearing)*deg_to_rad
 
-    dN = math.sin(abs_point_bearing) * map_point_dist
-    dE = math.cos(abs_point_bearing) * map_point_dist
+    dN = sin(abs_point_bearing) * map_point_dist
+    dE = cos(abs_point_bearing) * map_point_dist
 
     return get_location_metres(origin,dN,dE)

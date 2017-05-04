@@ -8,13 +8,13 @@ from constants import*
 """
 
 #determines whether the DBSCAN lab opens files written in DATA_LIST_FILE_NAME or whether to pick individual data files
-MULTIPLE_FILES = True
+MULTIPLE_FILES = False
 DATA_LIST_FILE_NAME = ["a5data_files.txt","DataFiles/List_Of_Files.txt", "DataFiles/OldDataFiles.txt"]
 LIST_FILE_ID = 1
-DATA_TEXT_FILE_NAME = ["DataFiles/new_data/Control/Radius/CONTROLR_5B_3M_6S_QT_10_t1.txt", "DataFiles/test3.txt", "DataFiles/old_data/Control/Radius/CONTROLR_5B_3M_6S_QT_10_t1.txt"]
-TEXT_FILE_ID = 1
+DATA_TEXT_FILE_NAME = ["DataFiles/points.csv","DataFiles/new_data/Control/Radius/CONTROLR_5B_3M_6S_QT_10_t1.txt", "DataFiles/test3.txt", "DataFiles/old_data/Control/Radius/CONTROLR_5B_3M_6S_QT_10_t1.txt"]
+TEXT_FILE_ID = 0
 DELIM = ["\t\t", " ", ","] 
-DELIM_ID = 0 #**make sure you match delimiter with what files you're anaylzing
+DELIM_ID = 2 #**make sure you match delimiter with what files you're anaylzing
 
 #Creates DataManager class that parses data files and stores them in as point objects
 DATA = DataManager(DATA_LIST_FILE_NAME[LIST_FILE_ID])
@@ -142,80 +142,80 @@ print(waypoints)
 ############################################################################
 
 while True:
-        refreshSurfaces()
-        drawGrid()
-        """
-        #*** DRAWING CLUSTER RECTS ***#
-        for rect in dbscan_obj.cluster_rects:
-            drawRect(rect[0], rect[1])
-        #*****************************#
+    refreshSurfaces()
+    drawGrid()
+    
+    #*** DRAWING CLUSTER RECTS ***#
+    for rect in dbscan_obj.cluster_rects:
+        drawRect(rect[0], rect[1])
+    #*****************************#
 
-        #*** DRAWING POINTS ***#
-        for pt in dbscan_obj.noise:
-            drawPoint([int(pt.coord[0]/MM_PXL[0]),int(pt.coord[1]/MM_PXL[1])], (50,50,50))
+    #*** DRAWING POINTS ***#
+    for pt in dbscan_obj.noise:
+        drawPoint([int(pt.coord[0]/MM_PXL[0]),int(pt.coord[1]/MM_PXL[1])], (50,50,50))
 
-        for c in dbscan_obj.clusters:
-            for pt in c.points:
-                n_c = [255,0,0]
-                if pt.classification == "CORE":
-                    n_c[2] = 255
-                drawPoint([int(pt.coord[0]/MM_PXL[0]),int(pt.coord[1]/MM_PXL[1])], n_c)
-        #**********************#
-        """
-        for i in range(len(waypoints[0])):
-            drawPoint([int(waypoints[0][i][0])*2,int(waypoints[0][i][1])*2], (255,255,255))
+    for c in dbscan_obj.clusters:
+        for pt in c.points:
+            n_c = [255,0,0]
+            if pt.classification == "CORE":
+                n_c[2] = 255
+            drawPoint([int(pt.coord[0]/MM_PXL[0]),int(pt.coord[1]/MM_PXL[1])], n_c)
+    #**********************#
+    
+    for i in range(len(waypoints[0])):
+        drawPoint([int(waypoints[0][i][0])*2,int(waypoints[0][i][1])*2], (255,255,255))
 
-        if pygame.mouse.get_pressed() == (1,0,0):
-            m_pos = pygame.mouse.get_pos()
-            dist = math.sqrt((8000 - (m_pos[0]*20.0))**2 + (8000 - (m_pos[1]*20.0))**2)
-            print(dist)
-        keys = pygame.key.get_pressed()
-        if keys[K_SPACE]:
-            change_val = 5
-        else:
-            change_val = 1
+    if pygame.mouse.get_pressed() == (1,0,0):
+        m_pos = pygame.mouse.get_pos()
+        dist = math.sqrt((8000 - (m_pos[0]*20.0))**2 + (8000 - (m_pos[1]*20.0))**2)
+        print(dist)
+    keys = pygame.key.get_pressed()
+    if keys[K_SPACE]:
+        change_val = 5
+    else:
+        change_val = 1
 
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+    for event in pygame.event.get():
+        if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
 
-            if event.type == KEYDOWN:
-                #[: previous file
-                #]: next file
-                if event.key == K_LEFTBRACKET:
-                    if MULTIPLE_FILES:
-                        dbscan_obj.RESET(DATA.getPointsFromFile(-1, DELIM[DELIM_ID]))
-                        FCA = FCAnal()
-                        FCA.initFCCs(dbscan_obj.clusters)
-                        FCA.analyze()
-                        dbscan_obj.normalizePoints(FCA.getVelocities())
-                elif event.key == K_RIGHTBRACKET:
-                    if MULTIPLE_FILES:
-                        dbscan_obj.RESET(DATA.getPointsFromFile(1, DELIM[DELIM_ID]))
-                        FCA.initFCCs(dbscan_obj.clusters)
-                        FCA.analyze()
-                        dbscan_obj.normalizePoints(FCA.getVelocities())
-                #up/down arrow: changes eps value
-                #left/right arrow: changes minPts value
-                if event.key == K_UP:
-                    dbscan_obj.changeDEps(change_val)
-                    dbscan_obj.RESET()
-                elif event.key == K_DOWN:
-                    dbscan_obj.changeDEps(-1*change_val)
-                    dbscan_obj.RESET()
-                elif event.key == K_LEFT:
-                    dbscan_obj.changeMinPts(-1*change_val)
-                    dbscan_obj.RESET()
-                elif event.key == K_RIGHT:
-                    dbscan_obj.changeMinPts(1*change_val)
-                    dbscan_obj.RESET()
-                elif event.key == K_PLUS:
-                    dbscan_obj.changeTEps(-1*change_val)
-                    dbscan_obj.RESET()
-                elif event.key == K_MINUS:
-                    dbscan_obj.changeTEps(change_val)
-                    dbscan_obj.RESET()
+        if event.type == KEYDOWN:
+            #[: previous file
+            #]: next file
+            if event.key == K_LEFTBRACKET:
+                if MULTIPLE_FILES:
+                    dbscan_obj.RESET(DATA.getPointsFromFile(-1, DELIM[DELIM_ID]))
+                    FCA = FCAnal()
+                    FCA.initFCCs(dbscan_obj.clusters)
+                    FCA.analyze()
+                    dbscan_obj.normalizePoints(FCA.getVelocities())
+            elif event.key == K_RIGHTBRACKET:
+                if MULTIPLE_FILES:
+                    dbscan_obj.RESET(DATA.getPointsFromFile(1, DELIM[DELIM_ID]))
+                    FCA.initFCCs(dbscan_obj.clusters)
+                    FCA.analyze()
+                    dbscan_obj.normalizePoints(FCA.getVelocities())
+            #up/down arrow: changes eps value
+            #left/right arrow: changes minPts value
+            if event.key == K_UP:
+                dbscan_obj.changeDEps(change_val)
+                dbscan_obj.RESET()
+            elif event.key == K_DOWN:
+                dbscan_obj.changeDEps(-1*change_val)
+                dbscan_obj.RESET()
+            elif event.key == K_LEFT:
+                dbscan_obj.changeMinPts(-1*change_val)
+                dbscan_obj.RESET()
+            elif event.key == K_RIGHT:
+                dbscan_obj.changeMinPts(1*change_val)
+                dbscan_obj.RESET()
+            elif event.key == K_PLUS:
+                dbscan_obj.changeTEps(-1*change_val)
+                dbscan_obj.RESET()
+            elif event.key == K_MINUS:
+                dbscan_obj.changeTEps(change_val)
+                dbscan_obj.RESET()
 
-        pygame.display.update()
-        fpsClock.tick(60)
+    pygame.display.update()
+    fpsClock.tick(60)

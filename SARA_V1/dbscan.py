@@ -23,7 +23,7 @@ class DBSCAN:
             self.points = []
 
         for p in arr_points:
-            self.points.append(Point(p[0],p[1],p[2]))
+            self.points.append(Point(p.timestamp,p.gps_reading,p.raw, p.robot_bearing, p.abs_ft))
 
     #returns cluster obj
     def findCluster(self, _name):

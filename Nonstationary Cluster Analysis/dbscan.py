@@ -29,7 +29,7 @@ class DataManager:
         del points[:]
 
     #returns points generated from data
-    def getPointsFromFile(self, nextFile = 0, delimiter = " ", single_file = "", file_type = ".txt"):
+    def getPointsFromFile(self, nextFile = 0, delimiter = " ", single_file = "", file_type = ".csv"):
         if single_file != "":
             file_name = single_file
             print("Extracting data from: " + file_name)
@@ -47,17 +47,23 @@ class DataManager:
             with open(file_name) as f:
                 data = f.readlines()
         else:
-            with open(file_name, 'rb') as csvfile:
-                data = csv.reader(csvfile,delimiter='\n')
-                print(data)
-
+            csvfile = open(file_name, 'rb')
+            data = csv.reader(csvfile,delimiter='\n')
+            print(data)
+        count = 0
         for line in data:
-            words = line.split(delimiter)#words: [ms, mm, deg, quality] #old: [mm,deg,quality]
-
-            quality = float(words[3])
-            dist = float(words[1])
-            angle = float(words[2])
+            if count > 10000:
+                break
+            count += 1
+            print count
+            words = line[0].split(delimiter)#words: [ms, mm, deg, quality] #old: [mm,deg,quality]
+            #[ts,gps.lat,gps.lon,dist,angle,quality,robot_bearing]
+            quality = float(words[5])
+            dist = float(words[3])
+            angle = float(words[4])
             timestamp = float(words[0])
+            gps = [float(words[1]),float(words[2])]
+
             #if distance is less than half a meter or quality is lower than min, pass
             if quality < self.MIN_QUALITY:
                     continue

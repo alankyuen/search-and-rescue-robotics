@@ -1,9 +1,9 @@
-import constants
+from constants import *
 from dronekit import LocationGlobal
 
 class field:
     def __init__(self):
-        self.field_dimensions_ft = [200.0,200.0]
+        self.field_dimensions_ft = [50.0,50.0]
         self.field_dimensions_m = [60.96,60.96]
 
         self.effective_sensor_range_ft = 12.1391 * 2
@@ -19,7 +19,7 @@ class field:
         self.gps_waypoints = []
         self.ft_waypoints = []
 
-    def waypointGen(origin, field_bearing):
+    def waypointGen(self, origin, field_bearing):
         S_R = self.effective_sensor_range_ft
 
         self.gps_waypoints = []
@@ -34,7 +34,7 @@ class field:
 
         waypoint = [waypoint[0] + delta_wp[0],waypoint[1] + delta_wp[1]]
         self.ft_waypoints.append(waypoint)
-        self.gps_waypoints.append(calcGPS_from_map(origin,field_bearing,waypoint))
+        self.gps_waypoints.append(calcGPS_from_map(origin,field_bearing, waypoint))
         #print(waypoint)
         negate = 1
         i = 1
@@ -58,8 +58,8 @@ class field:
     def addPoint(self, pt):
         #pt: .origin, .raw, .abs, .visited, .cluster_name
         #add point to its cell
-        row = min(max(0,int(pt.abs_ft[1]/self.effective_sensor_range_ft)), grid_dimensions[1]-1)
-        col = min(max(0,int(pt.abs_ft[0]/self.effective_sensor_range_ft)), grid_dimensions[0]-1)
+        row = min(max(0,int(pt.abs_ft[1]/self.effective_sensor_range_ft)), self.grid_dimensions[1]-1)
+        col = min(max(0,int(pt.abs_ft[0]/self.effective_sensor_range_ft)), self.grid_dimensions[0]-1)
 
         self.cells[row][col].append(pt)
         return [row,col]
