@@ -1,6 +1,24 @@
 from constants import *
 from dronekit import LocationGlobal
+"""
+class "field":
+    __init__:
+        const vars: field_dimensions_ft/m, effective_sensor_range_ft/m, grid_dimensions(ft/m)
+        data struct: cells[r][c]
+        calculated vars: field_bearing, gps_waypoints, ft_waypoints
+        dbscan vars: buckets_gps
 
+    waypointGen [_]
+        variables: field_width, S_R
+
+    addPoint [_]
+        adds point to appropriate cell
+        returns cell index that it has the point inserted into
+
+    getPaddedCell [_]
+        returns points of cell and neighboring points for DBSCAN
+
+"""
 class field:
     def __init__(self):
         self.field_dimensions_ft = [50.0,50.0]
@@ -20,6 +38,8 @@ class field:
         self.ft_waypoints = []
 
     def waypointGen(self, origin, field_bearing):
+        field_width = 50
+        field_width_half = field_width/2.0
         S_R = self.effective_sensor_range_ft
 
         self.gps_waypoints = []
@@ -30,7 +50,7 @@ class field:
         self.gps_waypoints.append(calcGPS_from_map(origin,field_bearing,waypoint))
         #print(waypoint)    
 
-        delta_wp = [0,200-S_R] #(+)
+        delta_wp = [0,field_width-S_R] #(+)
 
         waypoint = [waypoint[0] + delta_wp[0],waypoint[1] + delta_wp[1]]
         self.ft_waypoints.append(waypoint)
@@ -38,15 +58,15 @@ class field:
         #print(waypoint)
         negate = 1
         i = 1
-        while(abs(100-waypoint[0]) > S_R and abs(100-waypoint[1]) > S_R):
-            delta_wp = [negate*(200-(2*i*S_R)),0] #(+)
+        while(abs(field_width_half-waypoint[0]) > S_R and abs(field_width_half-waypoint[1]) > S_R):
+            delta_wp = [negate*(field_width-(2*i*S_R)),0] #(+)
             waypoint = [waypoint[0] + delta_wp[0],waypoint[1] + delta_wp[1]]
             self.ft_waypoints.append(waypoint)
             self.gps_waypoints.append(calcGPS_from_map(origin,field_bearing,waypoint))
             #print(waypoint)
 
-            if(abs(100-waypoint[0]) > S_R or abs(100-waypoint[1]) > S_R):
-                delta_wp = [0,negate*((2*i*S_R)-200)] #(+)
+            if(abs(field_width_half-waypoint[0]) > S_R or abs(field_width_half-waypoint[1]) > S_R):
+                delta_wp = [0,negate*((2*i*S_R)-field_width)] #(+)
                 waypoint = [waypoint[0] + delta_wp[0],waypoint[1] + delta_wp[1]]
                 self.ft_waypoints.append(waypoint)
                 self.gps_waypoints.append(calcGPS_from_map(origin,field_bearing,waypoint))

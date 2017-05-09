@@ -5,6 +5,26 @@ deg_to_rad = 0.0174533
 m_to_ft = 3.28084
 ft_to_m = 0.3048
 
+
+"""
+printGPS [X]
+    - does what you think
+
+getDist [X]
+    - returns dist of any two x,y coordinates
+
+get_location_metres [_]
+    -given GPS, dNorth (m), dEast (m) returns a new gps location
+
+get_bearing [_]:
+    -given two GPS, calculates bearing between
+
+calcGPS_from_map [_]:
+    -given origin and bearing of field, and the abs_ft map pos, calculate global gps
+
+"""
+
+
 def printGPS(gps):
     print"GPS:[{},{}]".format(gps.lat,gps.lon)
 def getDist(pt1,pt2):

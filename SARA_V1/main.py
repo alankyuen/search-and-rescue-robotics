@@ -14,14 +14,51 @@ from pymavlink import mavutil  # Needed for command message definitions
 import time
 import SARA
 
+#instantiate SARA object
 rover = SARA.SARA()
+
+#initialize SARA
 rover.init()
+#[[33.716175, -117.830442] ,[33.716041, -117.830221] , [33.716175, -117.830442,33],[33.716034, -117.830611]]
+#33.716041, -117.830221
+#33.716034, -117.830611
+#time.sleep(10)
 while(rover.MISSION_ENABLED):
     rover.run()
+
+
 rover.deconstruct()
 
 
+"""
+#1 towards first car of staff
+Home Location Fixed: LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25
+vehicle.home_location vs GPS_ORIGIN: LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25 vs LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25
+field_bearing: 187.0
 
+
+#2 towards sidewalk next to staff car
+Home Location Fixed: LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25
+vehicle.home_location vs GPS_ORIGIN: LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25 vs LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25
+field_bearing: 65.0
+
+#3 towards (atep) corner speed limit sign
+Home Location Fixed: LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25
+vehicle.home_location vs GPS_ORIGIN: LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25 vs LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25
+field_bearing: 77.0
+
+
+#4
+>>> Reached destination
+Home Location Fixed: LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25
+vehicle.home_location vs GPS_ORIGIN: LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25 vs LocationGlobal:lat=33.7166519165,lon=-117.831016541,alt=21.25
+field_bearing: 79.0
+
+
+****************************
+
+#1
+"""
 """
 # Get all vehicle attributes (state)
 print "\nGet all vehicle attribute values:"

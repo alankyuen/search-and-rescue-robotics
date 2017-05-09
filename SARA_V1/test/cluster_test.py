@@ -1,6 +1,5 @@
-from constants import *
+from constants_test import *
 from math import sin, cos, sqrt
-from dronekit import LocationGlobal
 
 """
 class "point":
@@ -13,7 +12,7 @@ class "point":
     getDistanceFrom [X]
         finds distance in feet between two points
 
-    calculateAbsPos: [_]
+    calculateAbsPos: [X]
         given that all angles are in reference from the east, it calculates abs_ft and abs_gps for the point
 
     printPt [X]
@@ -27,6 +26,35 @@ class "cluster":
     getCentroid [X]
         averages x and y and returns in array
 """
+
+"""
+#calculateAbsPos
+#############################################################
+#point(ts, gps_reading, [lidar heading from robot, dist, q], robot heading from field)
+p1 = point(1500,gps_tl,[90, 10000, 25], 90)
+p2 = point(3000,gps_bl,[90,24000,25],180)
+p3 = point(4500,gps_br,[90,10000,25],270)
+p4 = point(6000,gps_tr,[90,25000,25],0)
+field_bearing = get_bearing(gps_tr, gps_br)
+p1.calculateAbsPos(gps_tr, field_bearing)
+p1.printPt(calculated = True)
+p2.calculateAbsPos(gps_tr, field_bearing)
+p2.printPt(calculated = True)
+p3.calculateAbsPos(gps_tr, field_bearing)
+p3.printPt(calculated = True)
+p4.calculateAbsPos(gps_tr, field_bearing)
+p4.printPt(calculated = True)
+***
+gps_reading:LocationGlobal:lat=33.649897,lon=-117.848503,alt=0 raw:[90, 10000, 25] robot_bearing:90
+abs_ft:[2.906065147766391, 32.67944616537108] abs_gps:LocationGlobal:lat=33.64982366,lon=-117.848565316,alt=0
+gps_reading:LocationGlobal:lat=33.649815,lon=-117.848561,alt=0 raw:[90, 24000, 25] robot_bearing:180
+abs_ft:[-84.28612830182273, 27.568534069214213] abs_gps:LocationGlobal:lat=33.6496905015,lon=-117.848349554,alt=0
+gps_reading:LocationGlobal:lat=33.649703,lon=-117.848345,alt=0 raw:[90, 10000, 25] robot_bearing:270
+abs_ft:[-79.65221451552917, -9.165910718770895] abs_gps:LocationGlobal:lat=33.6497763399,lon=-117.848282684,alt=0
+gps_reading:LocationGlobal:lat=33.649785,lon=-117.848283,alt=0 raw:[90, 25000, 25] robot_bearing:0
+abs_ft:[3.806231688604625, -5.219385680573878] abs_gps:LocationGlobal:lat=33.6499146861,lon=-117.848503256,alt=0
+"""
+
 class point:
     def __init__(self, ts = 0, gps_at_measurement = [], raw_measurement = [], robotBearing = 0, abs_position = []):
         #raw_measurement = [bearing(degree), distance(mm), quality(0-60)]

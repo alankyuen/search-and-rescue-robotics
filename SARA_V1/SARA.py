@@ -16,7 +16,7 @@ class SARA:
 
         #gps_waypoints (path of navigation)
         self.GPS_WPS = []
-        self.currentWP_ID = 0
+        self.currentWP_ID = 0 
 
         #200ft by 200ft map
         self.map = field()
@@ -29,7 +29,10 @@ class SARA:
         self.current_scanned_cells = []
         self.clusters = []
 
+        #serial port to arduino
         self.ser = serial.Serial('/dev/ttyACM0', 115200)
+
+        #data files for recording 
         self.points_file = open("points.csv",'wb')
         self.buckets_file = open("buckets.csv",'wb')
 
@@ -42,18 +45,19 @@ class SARA:
         # Connect to the Vehicle.
         #   Set `wait_ready=True` to ensure default attributes are populated before `connect()` returns.
         #print "\nConnecting to vehicle on: %s" % connection_string
-       
-
         self.vehicle = connect(connection_string)
-
+        
+        #wait for vehicle to be armable
         while not self.vehicle.is_armable:
             print "Waiting for is_armable..."
             time.sleep(1)
 
+        #if armable: arm vehicle
         self.vehicle.mode = VehicleMode("GUIDED")
         self.vehicle.armed = True
         print"Vehicle is armed"
 
+        #wait for home_location GPS fix
         while not self.vehicle.home_location:
             cmds = self.vehicle.commands
             cmds.download()
@@ -68,28 +72,33 @@ class SARA:
             time.sleep(1)
         """
 
-        self.vehicle.groundspeed = 5
+        self.vehicle.groundspeed = 3
 
         #get field bearing
-        self.FIELD_BEARING = (-self.vehicle.heading + 450)%360              #0 to 360. North = 0
-        self.GPS_ORIGIN = self.vehicle.location.global_frame
+        self.FIELD_BEARING = (-self.vehicle.heading + 450.0)%360.0
+        #very corner of the field
+        self.GPS_ORIGIN = self.vehicle.home_location
 
         #TEST 5/3##########
         print"vehicle.home_location vs GPS_ORIGIN: {} vs {}".format(self.vehicle.home_location, self.GPS_ORIGIN)
-        print"field_bearing: {}".format(self.FIELD_BEARING)
+        print"field_bearing: {} vs robot_heading {}".format(self.FIELD_BEARING,self.vehicle.heading)
         ###################
 
 
-        self.GPS_WPS = self.map.waypointGen(self.GPS_ORIGIN, self.FIELD_BEARING)
+        self.GPS_WPS = [LocationGlobal(33.716175, -117.830442, 0),LocationGlobal(33.716041, -117.830221, 0), LocationGlobal(33.716175, -117.830442, 0),LocationGlobal(33.716034, -117.830611, 0)]#self.map.waypointGen(self.GPS_ORIGIN, self.FIELD_BEARING)
 
         #TEST 5/3##########
+        print(len(self.GPS_WPS))
         for g in self.GPS_WPS: 
             printGPS(g)
         ###################
 
         self.MISSION_ENABLED = True
 
-        self.vehicle.simple_goto(self.GPS_WPS[self.currentWP_ID], 5)
+        while not(self.hasReached(self.GPS_WPS[self.currentWP_ID])):
+            self.vehicle.simple_goto(self.GPS_WPS[self.currentWP_ID], 3)
+            time.sleep(0.5)
+
 
     def deconstruct(self):
         self.points_file.close()
@@ -98,7 +107,7 @@ class SARA:
         self.vehicle.close()
 
     def hasReached(self, targetLocation):
-            difference = 0.00001
+            difference = 0.00005
             if  abs(self.vehicle.location.global_frame.lat - targetLocation.lat) < difference and abs(self.vehicle.location.global_frame.lon - targetLocation.lon) < difference:
                     return True
             else:
@@ -112,12 +121,15 @@ class SARA:
             return
 
         try:
+
             timestamp = int(data[0])
             dist = float(data[1])
-            angle = float(data[2])
+            angle = float(data[2]) + 90.0
             quality = int(data[3])
+
             if(quality < 10):
                 return
+
             gps_from_ph = self.vehicle.location.global_frame
             robot_bearing = (-self.vehicle.heading + 450)%360 - self.FIELD_BEARING + 90
             pt = point(timestamp, gps_from_ph, [dist,angle,quality], robot_bearing)
@@ -132,8 +144,9 @@ class SARA:
 
             if not(cell_id in self.current_scanned_cells):
                 self.current_scanned_cells.append(cell_id)
-
-            point_string = str(timestamp)+","+str(gps_from_ph.lat)+","+str(gps_from_ph.lon)+","+str(dist)+","+str(angle)+","+str(quality)+","+str(robot_bearing)+"\n"
+            #[ts,gps.lat,gps.lon,dist,angle,quality,robot_bearing]
+            #point_string = str(timestamp)+","+str(gps_from_ph.lat)+","+str(gps_from_ph.lon)+","+str(dist)+","+str(angle)+","+str(quality)+","+str(robot_bearing)+","+str(pt.abs_ft[0])+","+str(pt.abs_ft[1])+"\n"
+            point_string = str(timestamp)+","+str(quality)+","+str(pt.abs_ft[0])+","+str(pt.abs_ft[1])+"\n"
             self.points_file.write(point_string)
             #print(string)
                 
@@ -143,7 +156,8 @@ class SARA:
     def run(self):
         if not self.MISSION_ENABLED:
             return False
-
+        #print "Bearing: {}".format(get_bearing(self.vehicle.location.global_frame,self.GPS_WPS[self.currentWP_ID]))
+        #checks if robot has reached the current destination waypoint
         if(self.hasReached(self.GPS_WPS[self.currentWP_ID])):
             print "reached wp"
             #stop vehicle
@@ -165,6 +179,8 @@ class SARA:
                 self.MISSION_ENABLED == False
             else:
                 self.vehicle.simple_goto(self.GPS_WPS[self.currentWP_ID], 5)
+
+        #if robot is still travelling to the current waypoint
         else:
             #scan_lidar, simple_goto
             #[DO YOU HAVE TO CALL THIS EVERY LOOP?]
@@ -172,3 +188,4 @@ class SARA:
             self.scan_lidar()
 
         return True
+

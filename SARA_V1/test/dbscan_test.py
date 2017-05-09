@@ -1,5 +1,5 @@
-import cluster, math, constants
-from cluster import *
+import math, constants_test
+from cluster_test import *
 
 """
 **Only way to check this is to run it through old dbscan programs, and see if it outputs the same thign
