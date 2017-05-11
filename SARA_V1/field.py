@@ -11,7 +11,7 @@ class "field":
     waypointGen [_]
         variables: field_width, S_R
 
-    addPoint [_]
+    addPoint [X]
         adds point to appropriate cell
         returns cell index that it has the point inserted into
 
@@ -21,11 +21,11 @@ class "field":
 """
 class field:
     def __init__(self):
-        self.field_dimensions_ft = [50.0,50.0]
+        self.field_dimensions_ft = [200.0,200.0]
         self.field_dimensions_m = [60.96,60.96]
 
-        self.effective_sensor_range_ft = 12.1391 * 2
-        self.effective_sensor_range_m = 3.7 * 2
+        self.effective_sensor_range_ft = 25
+        self.effective_sensor_range_m = 7.62
 
         self.grid_dimensions = [int(self.field_dimensions_ft[0]/self.effective_sensor_range_ft),int(self.field_dimensions_ft[1]/self.effective_sensor_range_ft)]
         #self.grid_dimensions_m = [self.field_dimensions_m[0]/self.effective_sensor_range_m[0],self.field_dimensions_m[1]/self.effective_sensor_range_m[1]]
@@ -38,7 +38,7 @@ class field:
         self.ft_waypoints = []
 
     def waypointGen(self, origin, field_bearing):
-        field_width = 50
+        field_width = 200
         field_width_half = field_width/2.0
         S_R = self.effective_sensor_range_ft
 
@@ -91,43 +91,59 @@ class field:
         if(coord[0] - 1 >= 0):
             y_bound = (coord[0]*self.effective_sensor_range_ft) - padding_ft
             for pt in self.cells[coord[0] - 1][coord[1]]:
+            	if pt is None:
+            		continue
                 if(pt.abs[1] > y_bound):
                     points.append(pt)
             if(coord[1] - 1 >= 0):
                 x_bound = (coord[1]*self.effective_sensor_range_ft) - padding_ft
                 for pt in self.cells[coord[0] - 1][coord[1] - 1]:
+                	if pt is None:
+            			continue
                     if(pt.abs[1] > y_bound and pt.abs[0] > x_bound):
                         points.append(pt)
             if(coord[1] + 1 < len(self.grid_dimensions[1])):
                 x_bound = ((coord[1] + 1) * self.effective_sensor_range_ft) + padding_ft
                 for pt in self.cells[coord[0] - 1][coord[1] + 1]:
+                	if pt is None:
+            			continue
                     if(pt.abs[1] > y_bound and pt.abs[0] < x_bound):
                         points.append(pt)
 
         if(coord[0] + 1 < len(self.grid_dimensions[0])):
             y_bound = ((coord[0]+1)*self.effective_sensor_range_ft) + padding_ft
             for pt in self.cells[coord[0] + 1][coord[1]]:
+            	if pt is None:
+            		continue
                 if(pt.abs[1] > y_bound):
                     points.append(pt)
             if(coord[1] - 1 >= 0):
                 x_bound = (coord[1] * self.effective_sensor_range_ft) - padding_ft
                 for pt in self.cells[coord[0] + 1][coord[1] - 1]:
+                	if pt is None:
+            			continue
                     if(pt.abs[1] > y_bound and pt.abs[0] > x_bound):
                         points.append(pt)
             if(coord[1] + 1 < len(self.grid_dimensions[1])):
                 x_bound = ((coord[1] + 1) * self.effective_sensor_range_ft) + padding_ft
                 for pt in self.cells[coord[0] + 1][coord[1] + 1]:
+                	if pt is None:
+            			continue
                     if(pt.abs[1] > y_bound and pt.abs[0] < x_bound):
                         points.append(pt)
 
         if(coord[1] - 1 >= 0):
             x_bound = (coord[1] * self.effective_sensor_range_ft) - padding_ft
             for pt in self.cells[coord[0]][coord[1] - 1]:
+            	if pt is None:
+            		continue
                 if(pt.abs[0] > x_bound):
                     points.append(pt)
         if(coord[1] + 1 < len(self.grid_dimensions[1])):
             x_bound = ((coord[1] + 1) * self.effective_sensor_range_ft) + padding_ft
             for pt in self.cells[coord[0]][coord[1] - 1]:
+            	if pt is None:
+            		continue
                 if(pt.abs[0] < x_bound):
                     points.append(pt)
 

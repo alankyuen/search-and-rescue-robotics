@@ -2,6 +2,8 @@ from cluster_test import*
 from dbscan_test import*
 from constants_test import*
 from field_test import*
+from math import radians
+import utm
 ################################################################################################
 """
 GOALS:
@@ -118,7 +120,6 @@ def addPoint(self, pt):
     self.cells[row][col].append(pt)
     return [row,col]
 """
-
 #soccer field
 gps_tl = [33.649754, -117.849540,0]
 gps_bl = [33.648467, -117.850491,0]
@@ -127,19 +128,42 @@ gps_tr = [33.649085, -117.848014,0]
 gps_br2 = [33.648668, -117.848291,0]
 
 f1 = field()
-bearing1 = get_bearing(gps_tr, gps_br2)
-bearing2 = get_bearing(gps_tr, [33.6487210065,-117.848400321,0])
+f2 = field()
 
-print(bearing1)
-print(bearing2)
-for wps in f1.waypointGen(gps_tr, bearing1):
+
+bearing1 = get_bearing(gps_bl, gps_tl)
+gps_bl_shifted = get_location_metres(gps_bl, cos(radians(bearing1+90)) * f1.effective_sensor_range_ft/2.0, sin(radians(bearing1+90)) * f1.effective_sensor_range_ft/2.0)
+
+f1.waypointGen(gps_bl, bearing1)
+f2.waypointGen(gps_bl_shifted,bearing1)
+
+f1.gps_waypoints += f2.gps_waypoints[::-1]
+
+f1.ft_waypoints += f2.ft_waypoints[::-1]
+
+for wps in f1.gps_waypoints:
     printGPS(wps)
-print(f1.ft_waypoints)
+
+"""
+gps1 = [33.649754, -117.849540,0]
+north_of_gps1 = [33.643945, -117.825836,0]
+gps2 = [33.649235, -117.849940,0]
+
+bearing = radians(get_bearing(gps1,gps2))
+
+d = haversine(gps1,gps2)
+
+gps2_pseudo = get_location_metres(gps1,cos(bearing)*d,sin(bearing)*d)
+print"pseudo: dist:{} bearing:{}".format(haversine(gps1,gps2_pseudo),get_bearing(gps1,gps2_pseudo))
+print"true: dist:{} bearing:{}".format(haversine(gps1,gps2),get_bearing(gps1,gps2))
+
+#224.421949235-229.653351555
+#335.05678748-330.808543212
 """
 #self, ts = 0, gps_at_measurement = [], raw_measurement = [], robotBearing = 0, abs_position = []
-p1 = point(1500,gps_tl,[30, 60000, 25], 90)
-p2 = point(3000,gps_tl,[30,5000,25],90)
-field_bearing = get_bearing(gps_tl, gps_bl)
-p1.calculateAbsPos(gps_tl, field_bearing)
+p1 = point(1500,gps_bl,[90, 5000, 25], 90)
+p2 = point(3000,gps_bl,[90,5000,25],90)
+field_bearing = get_bearing(gps_bl, gps_tl)
+print(field_bearing)
+p1.calculateAbsPos(gps_bl, field_bearing)
 p1.printPt(calculated = True)
-"""

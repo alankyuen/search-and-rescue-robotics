@@ -1,5 +1,5 @@
 from constants_test import *
-from math import sin, cos, sqrt
+from math import sin, cos, sqrt, radians, degrees
 
 """
 class "point":
@@ -74,14 +74,14 @@ class point:
 
     def calculateAbsPos(self, gps_origin, field_bearing):
         dist_meters = self.raw[1] /1000.0
-        abs_bearing = ((180.0 + field_bearing + self.robot_bearing + self.raw[0])%360.0)*deg_to_rad
-        dN = sin(abs_bearing) * dist_meters
-        dE = cos(abs_bearing) * dist_meters
+        abs_bearing = radians((180.0 + field_bearing + self.robot_bearing + (self.raw[0])%360.0))
+        dN = cos(abs_bearing) * dist_meters
+        dE = sin(abs_bearing) * dist_meters
 
         self.abs_gps = get_location_metres(self.gps_reading, dN, dE)
 
         dist_meters = haversine(gps_origin,self.abs_gps)
-        rel_bearing = ((450 - field_bearing + get_bearing(gps_origin,self.abs_gps))%360)*deg_to_rad
+        rel_bearing = radians((450 - field_bearing + get_bearing(gps_origin,self.abs_gps))%360)
         dN_map = sin(rel_bearing) * dist_meters
         dE_map = cos(rel_bearing) * dist_meters
 

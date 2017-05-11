@@ -1,4 +1,4 @@
-from math import radians, cos, sin, asin, sqrt, pi, atan2
+from math import radians, degrees, cos, sin, asin, sqrt, pi, atan2
 from dronekit import LocationGlobal
 
 deg_to_rad = 0.0174533
@@ -52,21 +52,30 @@ def get_location_metres(original_location, dNorth, dEast):
     newlon = original_location.lon + (dLon * 180/pi)
     return LocationGlobal(newlat,newlon, original_location.alt)
 
-def get_bearing(aLocation1, aLocation2):
-    off_x = aLocation2.lat - aLocation1.lat
-    off_y = aLocation2.lon - aLocation1.lon
-    bearing = 90 + atan2(-off_y, off_x) * 57.2957795
-    if bearing < 0:
-        bearing += 360.00
-    return bearing
+def get_bearing(pointA, pointB):
+
+    lat1 = radians(pointA[0])
+    lat2 = radians(pointB[0])
+
+    diffLong = radians(pointB[1] - pointA[1])
+
+    x = sin(diffLong) * cos(lat2)
+    y = cos(lat1) * sin(lat2) - (sin(lat1) * cos(lat2) * cos(diffLong))
+
+    initial_bearing = atan2(x, y)
+
+    initial_bearing = degrees(initial_bearing)
+    compass_bearing = (initial_bearing + 360) % 360
+
+    return compass_bearing
 
 def calcGPS_from_map(origin, field_bearing, map_pos):
-    map_point_bearing = atan2(map_pos[1],map_pos[0])*57.2958
+    map_point_bearing = degrees(atan2(map_pos[1],-map_pos[0]))
     map_point_dist = sqrt(map_pos[0]**2 + map_pos[1]**2) * ft_to_m
 
-    abs_point_bearing = (field_bearing + 270 + map_point_bearing)*deg_to_rad
+    abs_point_bearing = radians(field_bearing + 270 + map_point_bearing)
 
-    dN = sin(abs_point_bearing) * map_point_dist
-    dE = cos(abs_point_bearing) * map_point_dist
+    dN = cos(abs_point_bearing) * map_point_dist
+    dE = sin(abs_point_bearing) * map_point_dist
 
     return get_location_metres(origin,dN,dE)

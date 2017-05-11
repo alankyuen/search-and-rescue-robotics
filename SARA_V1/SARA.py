@@ -108,10 +108,10 @@ class SARA:
 
     def hasReached(self, targetLocation):
             difference = 0.00005
-            if  abs(self.vehicle.location.global_frame.lat - targetLocation.lat) < difference and abs(self.vehicle.location.global_frame.lon - targetLocation.lon) < difference:
-                    return True
+            if abs(self.vehicle.location.global_frame.lat - targetLocation.lat) < difference and abs(self.vehicle.location.global_frame.lon - targetLocation.lon) < difference:
+            	return True
             else:
-                    return False
+            	return False
 
     def scan_lidar(self):
         line = self.ser.readline()
@@ -146,7 +146,7 @@ class SARA:
                 self.current_scanned_cells.append(cell_id)
             #[ts,gps.lat,gps.lon,dist,angle,quality,robot_bearing]
             #point_string = str(timestamp)+","+str(gps_from_ph.lat)+","+str(gps_from_ph.lon)+","+str(dist)+","+str(angle)+","+str(quality)+","+str(robot_bearing)+","+str(pt.abs_ft[0])+","+str(pt.abs_ft[1])+"\n"
-            point_string = str(timestamp)+","+str(quality)+","+str(pt.abs_ft[0])+","+str(pt.abs_ft[1])+"\n"
+            point_string = str(timestamp)+","+str(quality)+","+str(pt.abs_ft[0])+","+str(pt.abs_ft[1])+","+str(cell_id[0])+","+str(cell_id[1])+"\n"
             self.points_file.write(point_string)
             #print(string)
                 
