@@ -1,4 +1,4 @@
-terfrom constants import *
+from constants import *
 from math import sin, cos, sqrt, radians
 from dronekit import LocationGlobal
 
@@ -53,7 +53,7 @@ class point:
         self.abs_gps = get_location_metres(self.gps_reading, dN, dE)
 
         dist_meters = haversine(gps_origin,self.abs_gps)
-        rel_bearing = radians((450 - field_bearing + get_bearing(gps_origin,self.abs_gps))%360)
+        rel_bearing = radians((450.0 - field_bearing + get_bearing(gps_origin,self.abs_gps))%360.0)
         dN_map = sin(rel_bearing) * dist_meters
         dE_map = cos(rel_bearing) * dist_meters
 

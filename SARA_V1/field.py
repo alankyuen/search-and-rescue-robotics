@@ -83,7 +83,7 @@ class field:
 
         self.cells[row][col].append(pt)
         return [row,col]
-
+"""
     def getPaddedCell(self, coord, padding_ft = 3.2808):
         #3.2808 ft padding is an extra meter
         points = self.cells[coord[0]][coord[1]]
@@ -148,3 +148,4 @@ class field:
                     points.append(pt)
 
         return points
+"""

@@ -54,10 +54,10 @@ def get_location_metres(original_location, dNorth, dEast):
 
 def get_bearing(pointA, pointB):
 
-    lat1 = radians(pointA[0])
-    lat2 = radians(pointB[0])
+    lat1 = radians(pointA.lat)
+    lat2 = radians(pointB.lat)
 
-    diffLong = radians(pointB[1] - pointA[1])
+    diffLong = radians(pointB.lon - pointA.lon)
 
     x = sin(diffLong) * cos(lat2)
     y = cos(lat1) * sin(lat2) - (sin(lat1) * cos(lat2) * cos(diffLong))

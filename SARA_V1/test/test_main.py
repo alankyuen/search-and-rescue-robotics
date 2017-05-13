@@ -159,7 +159,6 @@ print"true: dist:{} bearing:{}".format(haversine(gps1,gps2),get_bearing(gps1,gps
 
 #224.421949235-229.653351555
 #335.05678748-330.808543212
-"""
 #self, ts = 0, gps_at_measurement = [], raw_measurement = [], robotBearing = 0, abs_position = []
 p1 = point(1500,gps_bl,[90, 5000, 25], 90)
 p2 = point(3000,gps_bl,[90,5000,25],90)
@@ -167,3 +166,5 @@ field_bearing = get_bearing(gps_bl, gps_tl)
 print(field_bearing)
 p1.calculateAbsPos(gps_bl, field_bearing)
 p1.printPt(calculated = True)
+
+"""

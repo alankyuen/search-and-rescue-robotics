@@ -33,7 +33,7 @@ class SARA:
         self.ser = serial.Serial('/dev/ttyACM0', 115200)
 
         #data files for recording 
-        self.points_file = open("points.csv",'wb')
+        self.points_file = open("points4.csv",'wb')
         self.buckets_file = open("buckets.csv",'wb')
 
     def init(self):
@@ -95,11 +95,6 @@ class SARA:
 
         self.MISSION_ENABLED = True
 
-        while not(self.hasReached(self.GPS_WPS[self.currentWP_ID])):
-            self.vehicle.simple_goto(self.GPS_WPS[self.currentWP_ID], 3)
-            time.sleep(0.5)
-
-
     def deconstruct(self):
         self.points_file.close()
         self.buckets_file.close()
@@ -124,11 +119,8 @@ class SARA:
 
             timestamp = int(data[0])
             dist = float(data[1])
-            angle = float(data[2]) + 90.0
+            angle = float(data[2])
             quality = int(data[3])
-
-            if(quality < 10):
-                return
 
             gps_from_ph = self.vehicle.location.global_frame
             robot_bearing = (-self.vehicle.heading + 450)%360 - self.FIELD_BEARING + 90
@@ -148,6 +140,7 @@ class SARA:
             #point_string = str(timestamp)+","+str(gps_from_ph.lat)+","+str(gps_from_ph.lon)+","+str(dist)+","+str(angle)+","+str(quality)+","+str(robot_bearing)+","+str(pt.abs_ft[0])+","+str(pt.abs_ft[1])+"\n"
             point_string = str(timestamp)+","+str(quality)+","+str(pt.abs_ft[0])+","+str(pt.abs_ft[1])+","+str(cell_id[0])+","+str(cell_id[1])+"\n"
             self.points_file.write(point_string)
+            #point_string = str(timestamp)+","+str(quality)+","+str(pt.abs_ft[0])+","+str(pt.abs_ft[1])+","+str(cell_id[0])+","+str(cell_id[1])+","+str(gps_from_ph.lat)+","+str(gps_from_ph.lon)+","+str(dist)+","+str(angle)+"\n"
             #print(string)
                 
         except ValueError:
@@ -162,6 +155,8 @@ class SARA:
             print "reached wp"
             #stop vehicle
             self.vehicle.simple_goto(self.GPS_WPS[self.currentWP_ID], 0)
+
+            """
             pt_arr = []
             for cell_id in self.current_scanned_cells:
                 for pt in self.map.cells[cell_id[0]][cell_id[1]]:
@@ -172,13 +167,16 @@ class SARA:
                 for centroid in cs:
                     centroid_string = str(centroid[0])+","+str(centroid[1])+"\n"
                     self.buckets_file.write(centroid_string)
+            """
 
             self.currentWP_ID += 1
+            """
             #if no more WPS, mission complete
             if(self.currentWP_ID == 2):#len(self.GPS_WPS)):
                 self.MISSION_ENABLED == False
             else:
                 self.vehicle.simple_goto(self.GPS_WPS[self.currentWP_ID], 5)
+            """
 
         #if robot is still travelling to the current waypoint
         else:

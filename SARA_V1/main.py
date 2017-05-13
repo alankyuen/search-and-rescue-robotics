@@ -19,14 +19,8 @@ rover = SARA.SARA()
 
 #initialize SARA
 rover.init()
-#[[33.716175, -117.830442] ,[33.716041, -117.830221] , [33.716175, -117.830442,33],[33.716034, -117.830611]]
-#33.716041, -117.830221
-#33.716034, -117.830611
-#time.sleep(10)
 while(rover.MISSION_ENABLED):
     rover.run()
-
-
 rover.deconstruct()
 
 
