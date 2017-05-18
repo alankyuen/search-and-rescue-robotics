@@ -20,7 +20,14 @@ def haversine(gps1,gps2):
     c = 2 * asin(sqrt(a)) 
     r = 6378137.0 # Radius of earth in kilometers. Use 3956 for miles
     return c * r
-    
+
+def calculateGPSPos(dist_meters,degree,robot_bearing, gps_origin, field_bearing):
+    abs_bearing = radians(field_bearing + robot_bearing + degree)%360.0
+    dN = cos(abs_bearing) * dist_meters
+    dE = sin(abs_bearing) * dist_meters
+    abs_gps = get_location_metres(self.gps_reading, dN, dE)
+    return abs_gps
+
 def get_location_metres(original_location, dNorth, dEast):
     earth_radius = 6378137.0 #Radius of "spherical" earth
     #Coordinate offsets in radians

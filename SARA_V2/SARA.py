@@ -24,6 +24,13 @@ class SARA:
         #run condition
         self.MISSION_ENABLED = False
 
+        #object avoidance
+        self.avoiding = False
+        self.avoid_detouring = False
+        self.avoid_resuming = False
+        self.GPS_detour = None
+        self.GPS_resume = None
+
         #dbscan
         self.dbscan = DBSCAN(30, 50)
         self.current_scanned_cells = []
@@ -139,6 +146,13 @@ class SARA:
             #TESTING LIDAR DATA
             point_string = str(timestamp)+","+str(quality)+","+str(pt.abs_ft[0])+","+str(pt.abs_ft[1])+","+str(gps_from_ph.lat)+","+str(gps_from_ph.lon)+","+str(dist)+","+str(angle)+","+str(robot_bearing)+"\n"
             self.points_file.write(point_string)
+            
+            #object avoidance
+            if(False): #signal alarm
+                self.GPS_detour = calculateGPSPos(dist_meters,degree,robot_bearing, gps_origin, field_bearing)
+                self.GPS_resume = calculateGPSPos(dist_meters,degree,robot_bearing, gps_origin, field_bearing)
+                self.avoiding = True
+                self.vehicle.simple_goto(self.GPS_detour, 5)
         except ValueError:
             return
 
@@ -146,9 +160,24 @@ class SARA:
         if not self.MISSION_ENABLED:
             return False
 
+        self.scan_lidar()
+
+        if(self.avoiding):
+            if(self.avoid_detouring):
+                if(self.hasReached(self.GPS_detour)):
+                    self.vehicle.simple_goto(self.GPS_resume, 5)
+                    self.avoid_detouring = False
+                    self.avoid_resuming = True
+            elif(self.avoid_resuming):
+                if(self.hasReached(self.GPS_resume)):
+                    self.avoiding = False
+                    self.avoid_detour = False
+                    self.avoid_resuming = False
+                    self.vehicle.simple_goto(self.GPS_WPS[self.currentWP_ID], 5)
+            
         #print "Bearing: {}".format(get_bearing(self.vehicle.location.global_frame,self.GPS_WPS[self.currentWP_ID]))
         #checks if robot has reached the current destination waypoint
-        if(self.hasReached(self.GPS_WPS[self.currentWP_ID])):
+        elif(self.hasReached(self.GPS_WPS[self.currentWP_ID])):
             print "reached wp"
             #stop vehicle
             self.vehicle.simple_goto(self.GPS_WPS[self.currentWP_ID], 0)
@@ -178,9 +207,7 @@ class SARA:
         	else:
             	self.vehicle.simple_goto(self.GPS_WPS[self.currentWP_ID], 5)
 
-        #if robot is still travelling to the current waypoint
-        else:
-            self.scan_lidar()
+        
 
         """
         TESTING 5/16
